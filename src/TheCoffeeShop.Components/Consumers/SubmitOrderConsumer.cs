@@ -58,6 +58,14 @@ namespace TheCoffeeShop.Components.Consumers
         public SubmitOrderConsumerDefinition()
         {
             ConcurrentMessageLimit = 10;
+
+            Request<SubmitOrder>(x =>
+            {
+                x.Publishes<OrderReceived>();
+                x.Publishes<OrderAccepted>();
+                x.Responds<OrderSubmitted>();
+                x.PartitionBy(p => p.OrderId);
+            });
         }
     }
 }

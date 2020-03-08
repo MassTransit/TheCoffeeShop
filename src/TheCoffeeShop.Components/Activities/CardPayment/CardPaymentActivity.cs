@@ -4,11 +4,11 @@ namespace TheCoffeeShop.Components.Activities.CardPayment
     using System.Threading.Tasks;
     using Contracts.Models;
     using MassTransit.Courier;
-    using MassTransit.Util;
+    using MassTransit.Initializers;
 
 
     public class CardPaymentActivity :
-        Activity<CardPaymentArguments, CardPaymentLog>
+        IActivity<CardPaymentArguments, CardPaymentLog>
     {
         public async Task<ExecutionResult> Execute(ExecuteContext<CardPaymentArguments> context)
         {
@@ -18,17 +18,19 @@ namespace TheCoffeeShop.Components.Activities.CardPayment
 
             string transactionId = "123456";
 
+            var receipt = await MessageInitializerCache<PaymentReceipt>.InitializeMessage(new
+            {
+                Source = "Credit Card",
+                paymentDue.Amount,
+            });
+
             return context.CompletedWithVariables<CardPaymentLog>(new
             {
                 TransactionId = transactionId,
                 paymentDue.Amount
             }, new
             {
-                PaymentReceipt = TypeMetadataCache<PaymentReceipt>.InitializeFromObject(new
-                {
-                    Source = "Credit Card",
-                    paymentDue.Amount,
-                })
+                PaymentReceipt = receipt
             });
         }
 

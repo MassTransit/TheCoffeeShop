@@ -1,6 +1,5 @@
 namespace TheCoffeeShop.Components.Activities.CardPayment
 {
-    using Contracts;
     using Contracts.Models;
 
 

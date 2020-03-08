@@ -3,9 +3,9 @@
     using System;
     using Contracts;
     using MassTransit;
+    using MassTransit.AspNetCoreIntegration;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Mvc;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -24,22 +24,21 @@
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc();
 
             services.Configure<AppConfig>(Configuration.GetSection("AppConfig"));
 
-            services.AddMassTransit(cfg =>
-            {
-                cfg.AddBus(ConfigureBus);
+            services.AddSwaggerDocument();
 
+            services.AddMassTransit(ConfigureBus, cfg =>
+            {
+                cfg.AddServiceClient();
                 cfg.AddRequestClient<SubmitOrder>();
             });
-
-            services.AddSingleton<IHostedService, MassTransitApiHostedService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, Microsoft.AspNetCore.Hosting.IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
@@ -50,7 +49,16 @@
             }
 
             app.UseHttpsRedirection();
-            app.UseMvc();
+
+            app.UseRouting();
+
+            app.UseOpenApi(); // serve OpenAPI/Swagger documents
+            app.UseSwaggerUi3(); // serve Swagger UI
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
 
         static IBusControl ConfigureBus(IServiceProvider provider)

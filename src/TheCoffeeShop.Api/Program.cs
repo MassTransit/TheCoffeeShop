@@ -9,15 +9,11 @@
     {
         public static async Task Main(string[] args)
         {
-            var webHost = CreateWebHostBuilder(args).Build();
-
-            await webHost.RunAsync().ConfigureAwait(false);
+            await CreateWebHostBuilder(args).Build().RunAsync();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
-        {
-            return WebHost.CreateDefaultBuilder(args)
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>();
-        }
     }
 }

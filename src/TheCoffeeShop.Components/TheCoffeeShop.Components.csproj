@@ -5,8 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MassTransit" Version="5.3.2" />
-    <PackageReference Include="MassTransit.Automatonymous" Version="5.3.2" />
+    <PackageReference Include="MassTransit" Version="6.2.2-develop.2466" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
   </ItemGroup>
 

@@ -1,6 +1,5 @@
 namespace TheCoffeeShop.Components.Activities.LoyaltyPayment
 {
-    using Contracts;
     using Contracts.Models;
 
 

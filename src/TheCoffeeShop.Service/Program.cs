@@ -1,10 +1,13 @@
 ﻿namespace TheCoffeeShop.Service
 {
     using System;
+    using System.Linq;
+    using System.Diagnostics;
     using System.Threading.Tasks;
     using Components.Consumers;
     using Components.StateMachines;
     using MassTransit;
+    using MassTransit.Conductor.Configuration;
     using MassTransit.Definition;
     using MassTransit.Saga;
     using Microsoft.Extensions.Configuration;
@@ -18,6 +21,8 @@
     {
         static async Task Main(string[] args)
         {
+            var isService = !(Debugger.IsAttached || args.Contains("--console"));
+
             var builder = new HostBuilder()
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
@@ -29,18 +34,18 @@
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
-                    services.Configure<AppConfig>(hostContext.Configuration.GetSection("AppConfig"));
+                    services.Configure<AppConfig>(options => hostContext.Configuration.GetSection("AppConfig").Bind(options));
 
                     services.AddMassTransit(cfg =>
                     {
                         cfg.AddConsumersFromNamespaceContaining<ConsumerAnchor>();
                         cfg.AddSagaStateMachinesFromNamespaceContaining<StateMachineAnchor>();
+                        cfg.AddServiceClient();
                         cfg.AddBus(ConfigureBus);
                     });
 
                     services.AddSingleton(typeof(ISagaRepository<>), typeof(InMemorySagaRepository<>));
-
-                    services.AddSingleton<IHostedService, MassTransitConsoleHostedService>();
+                    services.AddHostedService<MassTransitConsoleHostedService>();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
@@ -48,7 +53,14 @@
                     logging.AddConsole();
                 });
 
-            await builder.RunConsoleAsync().ConfigureAwait(false);
+            if (isService)
+            {
+                await builder.UseWindowsService().Build().RunAsync();
+            }
+            else
+            {
+                await builder.RunConsoleAsync();
+            }
         }
 
         static IBusControl ConfigureBus(IServiceProvider provider)
@@ -65,7 +77,10 @@
 
                 cfg.UseInMemoryScheduler();
 
-                cfg.ConfigureEndpoints(provider, new KebabCaseEndpointNameFormatter());
+                var serviceInstanceOptions = new ServiceInstanceOptions()
+                    .SetEndpointNameFormatter(KebabCaseEndpointNameFormatter.Instance);
+
+                cfg.ConfigureServiceEndpoints(provider, serviceInstanceOptions);
             });
         }
     }

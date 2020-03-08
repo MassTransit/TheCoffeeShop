@@ -6,7 +6,7 @@ namespace TheCoffeeShop.Components.Activities.LoyaltyPayment
 
 
     public class LoyaltyPaymentActivity :
-        Activity<LoyaltyPaymentArguments, LoyaltyPaymentLog>
+        IActivity<LoyaltyPaymentArguments, LoyaltyPaymentLog>
     {
         public async Task<ExecutionResult> Execute(ExecuteContext<LoyaltyPaymentArguments> context)
         {

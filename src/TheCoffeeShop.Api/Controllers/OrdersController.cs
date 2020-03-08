@@ -7,7 +7,6 @@ namespace TheCoffeeShop.Api.Controllers
     using System.Threading.Tasks;
     using Contracts;
     using MassTransit;
-    using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Mvc;
     using Models;
 
